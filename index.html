@@ -68,6 +68,26 @@
     }
   </style>
 </head>
+  <script>
+  // Solicitar geolocalización al cargar la app
+  window.addEventListener("load", () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log("Ubicación concedida:", position.coords);
+          // Aquí podrías enviar la ubicación al mapa si lo necesitas
+        },
+        (error) => {
+          alert("Para que el mapa funcione correctamente, activa los permisos de ubicación en tu navegador.");
+          console.warn("Error de ubicación:", error.message);
+        }
+      );
+    } else {
+      alert("Tu dispositivo no admite geolocalización.");
+    }
+  });
+</script>
+
 <body>
   <header id="title">Inicio</header>
   <main id="content">
