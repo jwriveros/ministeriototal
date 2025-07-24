@@ -10,9 +10,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Ministerio Total</title>
 
-  <!-- Script de ArcGIS embeddable map -->
-  <script type="module" src="https://js.arcgis.com/embeddable-components/4.33/arcgis-embeddable-components.esm.js"></script>
-
   <style>
     html {
       padding-bottom: env(safe-area-inset-bottom);
@@ -64,12 +61,6 @@
       color: #6A4FA3;
       font-weight: bold;
     }
-
-    arcgis-embedded-map {
-      width: 100%;
-      height: 80vh;
-      display: block;
-    }
   </style>
 </head>
 <body>
@@ -95,16 +86,8 @@
     });
 
     document.getElementById("btn-map").addEventListener("click", () => {
-      title.innerText = "Territorios";
-      content.innerHTML = `
-        <arcgis-embedded-map
-          item-id="26140e40a84f48afa9c16cba4d15330f"
-          theme="light"
-          center="-73.06841575418468,6.605211537237317"
-          scale="9027.977411"
-          portal-url="https://www.arcgis.com">
-        </arcgis-embedded-map>`;
-      toggleActive("btn-map");
+      // Redirigir a la Instant App publicada de ArcGIS
+      window.location.href = "https://www.arcgis.com/apps/instant/notification/index.html?appid=1f3c8e44bd1e41318519b94cba814bb7";
     });
 
     function toggleActive(activeId) {
@@ -112,7 +95,7 @@
       document.getElementById(activeId).classList.add("active");
     }
 
-    // Optional: solicitar ubicación solo una vez al cargar
+    // Solicitar ubicación al cargar (opcional, solo por buena práctica)
     window.addEventListener("load", () => {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
