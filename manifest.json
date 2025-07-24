@@ -1,7 +1,7 @@
 
 {
-  "name": "App de Territorio",
-  "short_name": "Territorio",
+  "name": "Ministerio Total",
+  "short_name": "Ministerio",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
