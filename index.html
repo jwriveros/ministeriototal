@@ -1,17 +1,19 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#6A4FA3" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Ministerio Total</title>
   <style>
+    html {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
     body {
       margin: 0;
       font-family: "Helvetica Neue", sans-serif;
@@ -28,6 +30,7 @@
 
     main {
       padding: 2em;
+      padding-bottom: 80px; /* deja espacio para el menú */
       text-align: center;
     }
 
@@ -45,15 +48,18 @@
       display: flex;
       justify-content: space-around;
       border-top: 1px solid #ccc;
+      padding-bottom: env(safe-area-inset-bottom);
+      height: 60px;
+      align-items: center;
     }
 
     nav button {
       flex: 1;
-      padding: 1em 0;
       background: none;
       border: none;
       font-size: 1em;
       color: #444;
+      height: 100%;
     }
 
     nav button.active {
@@ -79,12 +85,12 @@
 
     document.getElementById("btn-home").addEventListener("click", () => {
       title.innerText = "Inicio";
-      content.innerHTML = `<h1 style="font-size: 1.5em; font-weight: 600;">Bienvenido</h1>`;
+      content.innerHTML = `<h1 style="font-size: 1.5em; font-weight: 600;">Bienvenido a la app para nuestro ministerio</h1>`;
       toggleActive("btn-home");
     });
 
     document.getElementById("btn-map").addEventListener("click", () => {
-      title.innerText = "Territorio";
+      title.innerText = "Territorios";
       content.innerHTML = `<iframe src="https://arcg.is/1eLqOi0" allowfullscreen></iframe>`;
       toggleActive("btn-map");
     });
