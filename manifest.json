@@ -1,7 +1,7 @@
 
 {
   "name": "Ministerio Total",
-  "short_name": "Ministerio",
+  "short_name": "Ministerio Total",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
