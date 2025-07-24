@@ -9,7 +9,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Ministerio Total</title>
-
   <style>
     html {
       padding-bottom: env(safe-area-inset-bottom);
@@ -33,6 +32,12 @@
       padding: 2em;
       padding-bottom: 80px;
       text-align: center;
+    }
+
+    iframe {
+      width: 100%;
+      height: 80vh;
+      border: none;
     }
 
     nav {
@@ -61,9 +66,36 @@
       color: #6A4FA3;
       font-weight: bold;
     }
+
+    #splash-screen {
+      position: fixed;
+      z-index: 9999;
+      background: #6A4FA3;
+      color: white;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    #splash-screen img {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
+  <!-- Splash screen -->
+  <div id="splash-screen">
+    <img src="icon-192.png" alt="Logo" />
+    <h2 style="font-size: 1.4em; font-weight: 600;">Ministerio Total</h2>
+  </div>
+
   <header id="title">Inicio</header>
 
   <main id="content">
@@ -86,8 +118,14 @@
     });
 
     document.getElementById("btn-map").addEventListener("click", () => {
-      // Redirigir a la Instant App publicada de ArcGIS
-      window.location.href = "https://www.arcgis.com/apps/instant/notification/index.html?appid=1f3c8e44bd1e41318519b94cba814bb7";
+      title.innerText = "Territorios";
+      content.innerHTML = `
+        <iframe src="https://www.arcgis.com/apps/instant/notification/index.html?appid=1f3c8e44bd1e41318519b94cba814bb7"
+                allowfullscreen
+                frameborder="0">
+        No se admiten iFrames en esta página.
+        </iframe>`;
+      toggleActive("btn-map");
     });
 
     function toggleActive(activeId) {
@@ -95,14 +133,10 @@
       document.getElementById(activeId).classList.add("active");
     }
 
-    // Solicitar ubicación al cargar (opcional, solo por buena práctica)
+    // Ocultar splash screen cuando cargue la app
     window.addEventListener("load", () => {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          () => console.log("Ubicación concedida"),
-          () => console.warn("Permiso de ubicación denegado")
-        );
-      }
+      const splash = document.getElementById("splash-screen");
+      if (splash) splash.style.display = "none";
     });
   </script>
 </body>
