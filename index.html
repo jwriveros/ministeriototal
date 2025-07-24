@@ -9,6 +9,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Ministerio Total</title>
+
+  <!-- Script de ArcGIS embeddable map -->
+  <script type="module" src="https://js.arcgis.com/embeddable-components/4.33/arcgis-embeddable-components.esm.js"></script>
+
   <style>
     html {
       padding-bottom: env(safe-area-inset-bottom);
@@ -32,12 +36,6 @@
       padding: 2em;
       padding-bottom: 80px;
       text-align: center;
-    }
-
-    iframe {
-      width: 100%;
-      height: 80vh;
-      border: none;
     }
 
     nav {
@@ -66,32 +64,19 @@
       color: #6A4FA3;
       font-weight: bold;
     }
+
+    arcgis-embedded-map {
+      width: 100%;
+      height: 80vh;
+      display: block;
+    }
   </style>
 </head>
-  <script>
-  // Solicitar geolocalización al cargar la app
-  window.addEventListener("load", () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          console.log("Ubicación concedida:", position.coords);
-          // Aquí podrías enviar la ubicación al mapa si lo necesitas
-        },
-        (error) => {
-          alert("Para que el mapa funcione correctamente, activa los permisos de ubicación en tu navegador.");
-          console.warn("Error de ubicación:", error.message);
-        }
-      );
-    } else {
-      alert("Tu dispositivo no admite geolocalización.");
-    }
-  });
-</script>
-
 <body>
   <header id="title">Inicio</header>
+
   <main id="content">
-    <h1 style="font-size: 1.5em; font-weight: 600;">Bienvenidos a la app para nuestro ministerio</h1>
+    <h1 style="font-size: 1.5em; font-weight: 600;">Bienvenido a la app para nuestro ministerio</h1>
   </main>
 
   <nav>
@@ -111,7 +96,14 @@
 
     document.getElementById("btn-map").addEventListener("click", () => {
       title.innerText = "Territorios";
-      content.innerHTML = `<iframe src="https://arcg.is/1eLqOi0" allowfullscreen></iframe>`;
+      content.innerHTML = `
+        <arcgis-embedded-map
+          item-id="26140e40a84f48afa9c16cba4d15330f"
+          theme="light"
+          center="-73.06841575418468,6.605211537237317"
+          scale="9027.977411"
+          portal-url="https://www.arcgis.com">
+        </arcgis-embedded-map>`;
       toggleActive("btn-map");
     });
 
@@ -120,22 +112,15 @@
       document.getElementById(activeId).classList.add("active");
     }
 
-    // ⬇️ Service Worker para detectar actualizaciones
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js").then(reg => {
-        reg.onupdatefound = () => {
-          const installingWorker = reg.installing;
-          installingWorker.onstatechange = () => {
-            if (installingWorker.state === "installed" && navigator.serviceWorker.controller) {
-              const refresh = confirm("⚠️ ¡Nueva versión disponible! ¿Quieres actualizar?");
-              if (refresh) {
-                window.location.reload();
-              }
-            }
-          };
-        };
-      });
-    }
+    // Optional: solicitar ubicación solo una vez al cargar
+    window.addEventListener("load", () => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          () => console.log("Ubicación concedida"),
+          () => console.warn("Permiso de ubicación denegado")
+        );
+      }
+    });
   </script>
 </body>
 </html>
