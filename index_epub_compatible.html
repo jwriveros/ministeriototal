@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6A4FA3" />
+  <title>Ministerio Total</title>
+  <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.88/dist/epub.min.js"></script>
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    header { text-align: center; padding: 1em; font-size: 1.5em; font-weight: bold; }
+    main { padding: 1em 1em 80px; }
+    nav {
+      position: fixed; bottom: 0; width: 100%; background: #f5f5f5;
+      display: flex; justify-content: space-around; border-top: 1px solid #ccc;
+      height: 60px; align-items: center;
+    }
+    nav button {
+      flex: 1; background: none; border: none; font-size: 1em; color: #444; height: 100%;
+    }
+    nav button.active { color: #6A4FA3; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 0.5em; }
+    select, input[type=file] { width: 100%; margin-top: 1em; padding: 0.5em; }
+  </style>
+</head>
+<body>
+  <header id="title">Inicio</header>
+  <main id="content"><p>Bienvenido a la app para nuestro ministerio.</p></main>
+  <nav>
+    <button id="btn-home" class="active">Inicio</button>
+    <button id="btn-map">Territorios</button>
+    <button id="btn-meetings">Reuniones</button>
+    <button id="btn-service">Servicio</button>
+  </nav>
+  <script>
+    const title = document.getElementById("title");
+    const content = document.getElementById("content");
+    const state = { meetings: {} };
+
+    function toggleActive(id) {
+      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    function renderHome() {
+      title.innerText = "Inicio";
+      content.innerHTML = "<p>Bienvenido a la app para nuestro ministerio.</p>";
+    }
+
+    function renderMap() {
+      title.innerText = "Territorios";
+      content.innerHTML = '<iframe src="https://www.arcgis.com/apps/instant/notification/index.html?appid=1f3c8e44bd1e41318519b94cba814bb7" style="width:100%; height:80vh; border:none;" allowfullscreen></iframe>';
+    }
+
+    function renderService() {
+      title.innerText = "Servicio";
+      content.innerHTML = "<p>Próximamente podrás ver aquí actividades de servicio.</p>";
+    }
+
+    function renderMeetings() {
+      title.innerText = "Reuniones";
+      let html = '<h2>Asignaciones</h2>';
+      html += '<select id="weekSelector"></select>';
+      html += '<div id="meetingTableContainer"></div>';
+      html += '<hr><h3>Subir archivo EPUB</h3><input type="file" id="epubInput" accept=".epub">';
+      content.innerHTML = html;
+
+      const weekSelector = document.getElementById("weekSelector");
+      const tableContainer = document.getElementById("meetingTableContainer");
+
+      function updateWeekSelector() {
+        weekSelector.innerHTML = "";
+        Object.keys(state.meetings).forEach(week => {
+          const opt = document.createElement("option");
+          opt.value = week;
+          opt.textContent = week;
+          weekSelector.appendChild(opt);
+        });
+        if (weekSelector.options.length > 0) {
+          renderTable(weekSelector.value);
+        }
+      }
+
+      function renderTable(week) {
+        const rows = state.meetings[week] || [];
+        let t = '<table><thead><tr><th>Parte</th><th>Asignado a</th></tr></thead><tbody>';
+        rows.forEach((item, idx) => {
+          const key = week + "_part_" + idx;
+          const saved = localStorage.getItem(key) || "";
+          t += `<tr><td>${item}</td><td><input type="text" value="${saved}" data-key="${key}"></td></tr>`;
+        });
+        t += "</tbody></table>";
+        tableContainer.innerHTML = t;
+
+        tableContainer.querySelectorAll('input[type="text"]').forEach(input => {
+          input.addEventListener("input", () => {
+            localStorage.setItem(input.dataset.key, input.value);
+          });
+        });
+      }
+
+      weekSelector.addEventListener("change", () => renderTable(weekSelector.value));
+
+      document.getElementById("epubInput").addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const book = ePub(file);
+        book.ready.then(() => {
+          const textByWeek = {};
+          const spine = book.spine.spineItems;
+
+          let processNext = function(i) {
+            if (i >= spine.length) {
+              state.meetings = textByWeek;
+              updateWeekSelector();
+              return;
+            }
+            spine[i].load(book.load.bind(book)).then(item => {
+              const text = item.document.body.textContent;
+              const weekMatch = text.match(/\d{1,2}[-–]\d{1,2} DE [A-ZÁÉÍÓÚÑ]+/i);
+              if (weekMatch) {
+                const week = weekMatch[0].trim();
+                const parts = [...text.matchAll(/\d+\.\s+(.+?)\s*\(\d+\s*min[s]?\)/g)].map(m => m[1]);
+                if (parts.length > 0) textByWeek[week] = parts;
+              }
+              processNext(i + 1);
+            });
+          };
+          processNext(0);
+        });
+      });
+
+      updateWeekSelector();
+    }
+
+    document.getElementById("btn-home").addEventListener("click", () => { renderHome(); toggleActive("btn-home"); });
+    document.getElementById("btn-map").addEventListener("click", () => { renderMap(); toggleActive("btn-map"); });
+    document.getElementById("btn-meetings").addEventListener("click", () => { renderMeetings(); toggleActive("btn-meetings"); });
+    document.getElementById("btn-service").addEventListener("click", () => { renderService(); toggleActive("btn-service"); });
+
+    window.addEventListener("load", () => renderHome());
+  </script>
+</body>
+</html>
