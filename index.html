@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6A4FA3" />
   <title>Ministerio Total</title>
+  <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.88/dist/epub.min.js"></script>
   <style>
     body { margin: 0; font-family: sans-serif; }
     header { text-align: center; padding: 1em; font-size: 1.5em; font-weight: bold; }
@@ -32,15 +34,10 @@
     <button id="btn-meetings">Reuniones</button>
     <button id="btn-service">Servicio</button>
   </nav>
-  <script type="module">
-    import * as EPUB from 'https://cdn.jsdelivr.net/npm/epubjs@0.3.88/dist/epub.min.mjs';
-
+  <script>
     const title = document.getElementById("title");
     const content = document.getElementById("content");
-
-    const state = {
-      meetings: {}
-    };
+    const state = { meetings: {} };
 
     function toggleActive(id) {
       document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
@@ -54,8 +51,7 @@
 
     function renderMap() {
       title.innerText = "Territorios";
-      content.innerHTML = `<iframe src="https://www.arcgis.com/apps/instant/notification/index.html?appid=1f3c8e44bd1e41318519b94cba814bb7"
-        style="width:100%; height:80vh; border:none;" allowfullscreen></iframe>`;
+      content.innerHTML = '<iframe src="https://www.arcgis.com/apps/instant/notification/index.html?appid=1f3c8e44bd1e41318519b94cba814bb7" style="width:100%; height:80vh; border:none;" allowfullscreen></iframe>';
     }
 
     function renderService() {
@@ -107,46 +103,43 @@
 
       weekSelector.addEventListener("change", () => renderTable(weekSelector.value));
 
-      document.getElementById("epubInput").addEventListener("change", async (e) => {
+      document.getElementById("epubInput").addEventListener("change", function(e) {
         const file = e.target.files[0];
         if (!file) return;
 
-        const book = EPUB.default(file);
-        const textByWeek = {};
+        const book = ePub(file);
+        book.ready.then(() => {
+          const textByWeek = {};
+          const spine = book.spine.spineItems;
 
-        await book.ready;
-        const spineItems = await book.loaded.spine;
-
-        for (const item of spineItems.items) {
-          const text = await item.load(book.load.bind(book)).then(res => res && res.document.body.textContent);
-          if (!text) continue;
-          const weekMatch = text.match(/\d{1,2}[-–]\d{1,2} DE [A-ZÁÉÍÓÚÑ]+/i);
-          if (weekMatch) {
-            const week = weekMatch[0].trim();
-            const parts = [...text.matchAll(/\d+\.\s+(.+?)\s*\(\d+\s*min[s]?\)/g)].map(m => m[1]);
-            if (parts.length > 0) textByWeek[week] = parts;
-          }
-        }
-
-        state.meetings = textByWeek;
-        updateWeekSelector();
+          let processNext = function(i) {
+            if (i >= spine.length) {
+              state.meetings = textByWeek;
+              updateWeekSelector();
+              return;
+            }
+            spine[i].load(book.load.bind(book)).then(item => {
+              const text = item.document.body.textContent;
+              const weekMatch = text.match(/\d{1,2}[-–]\d{1,2} DE [A-ZÁÉÍÓÚÑ]+/i);
+              if (weekMatch) {
+                const week = weekMatch[0].trim();
+                const parts = [...text.matchAll(/\d+\.\s+(.+?)\s*\(\d+\s*min[s]?\)/g)].map(m => m[1]);
+                if (parts.length > 0) textByWeek[week] = parts;
+              }
+              processNext(i + 1);
+            });
+          };
+          processNext(0);
+        });
       });
 
       updateWeekSelector();
     }
 
-    document.getElementById("btn-home").addEventListener("click", () => {
-      renderHome(); toggleActive("btn-home");
-    });
-    document.getElementById("btn-map").addEventListener("click", () => {
-      renderMap(); toggleActive("btn-map");
-    });
-    document.getElementById("btn-meetings").addEventListener("click", () => {
-      renderMeetings(); toggleActive("btn-meetings");
-    });
-    document.getElementById("btn-service").addEventListener("click", () => {
-      renderService(); toggleActive("btn-service");
-    });
+    document.getElementById("btn-home").addEventListener("click", () => { renderHome(); toggleActive("btn-home"); });
+    document.getElementById("btn-map").addEventListener("click", () => { renderMap(); toggleActive("btn-map"); });
+    document.getElementById("btn-meetings").addEventListener("click", () => { renderMeetings(); toggleActive("btn-meetings"); });
+    document.getElementById("btn-service").addEventListener("click", () => { renderService(); toggleActive("btn-service"); });
 
     window.addEventListener("load", () => renderHome());
   </script>
